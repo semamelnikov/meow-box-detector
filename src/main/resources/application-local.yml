@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: meow-box-detector
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+    url: jdbc:postgresql://localhost:5432/meow-box-detector-db
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+  jta:
+    enabled: true
+
+
