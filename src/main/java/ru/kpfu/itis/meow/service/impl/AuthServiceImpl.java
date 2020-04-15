@@ -69,6 +69,7 @@ public class AuthServiceImpl implements AuthService {
                 .breed(params.getBreed())
                 .weight(params.getWeight())
                 .deviceId(device.getId())
+                .userId(user.getId())
                 .build();
         catRepository.save(cat);
 

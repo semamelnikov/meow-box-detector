@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.kpfu.itis.meow.model.totals.DayTime;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -22,4 +23,7 @@ public class CatDetection {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
+
+    @Enumerated(EnumType.STRING)
+    private DayTime dayTime;
 }

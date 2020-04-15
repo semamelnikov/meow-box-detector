@@ -24,4 +24,5 @@ public class Cat {
     private Integer age;
     private String breed;
     private Long deviceId;
+    private Long userId;
 }
