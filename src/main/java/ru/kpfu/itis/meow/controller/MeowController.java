@@ -11,6 +11,7 @@ import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/meow")
+@CrossOrigin(origins = "*")
 public class MeowController {
 
     private final DeviceService deviceService;
