@@ -7,5 +7,5 @@ import lombok.Data;
 @Builder
 public class CountAggregationResult {
     private String name;
-    private Long count;
+    private Long value;
 }

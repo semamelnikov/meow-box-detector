@@ -93,7 +93,7 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .map(
                         entry -> CountAggregationResult.builder()
                                 .name(entry.getKey())
-                                .count(entry.getValue())
+                                .value(entry.getValue())
                                 .build()
                 )
                 .collect(Collectors.toList());
