@@ -1,4 +1,4 @@
-package ru.kpfu.itis.meow.model.totals;
+package ru.kpfu.itis.meow.model.statistics;
 
 import lombok.Builder;
 import lombok.Data;

@@ -4,16 +4,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.kpfu.itis.meow.model.entity.Cat;
 import ru.kpfu.itis.meow.model.entity.CatDetection;
-import ru.kpfu.itis.meow.model.totals.DayTime;
-import ru.kpfu.itis.meow.model.totals.TotalCatInfo;
-import ru.kpfu.itis.meow.model.totals.TotalStatistics;
+import ru.kpfu.itis.meow.model.entity.DayTime;
+import ru.kpfu.itis.meow.model.statistics.CountAggregationResult;
+import ru.kpfu.itis.meow.model.statistics.Statistics;
+import ru.kpfu.itis.meow.model.statistics.TotalCatInfo;
 import ru.kpfu.itis.meow.repository.CatDetectionRepository;
 import ru.kpfu.itis.meow.repository.CatRepository;
 import ru.kpfu.itis.meow.repository.UserRepository;
 import ru.kpfu.itis.meow.service.StatisticsService;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,7 +34,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     @Override
-    public TotalStatistics getTotals() {
+    public Statistics getTotals() {
         LocalDate now = LocalDate.now();
 
         List<Cat> topHundredOfTheYear = getTopCatOfTheYear(now.getYear(), 100);
@@ -43,7 +46,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         Cat catOfTheDay = getCatOfTheDay(now);
         Cat catOfAllTime = getCatOfAllTime();
 
-        return TotalStatistics.builder()
+        return Statistics.builder()
                 .year(getInfo(catOfTheYear))
                 .month(getInfo(catOfTheMonth))
                 .day(getInfo(catOfTheDay))
@@ -51,7 +54,49 @@ public class StatisticsServiceImpl implements StatisticsService {
                 .monthTopTen(getInfo(topTenOfTheMonth))
                 .yearTopHundred(getInfo(topHundredOfTheYear))
                 .topTimeInMonth(getTopTimeInMonth(now))
+                .aggregationByBreed(getAggregationByBreed())
+                .yearDetectionAggregationByMonth(getYearDetectionAggregationByMonth(now))
+                .monthAggregationByDayTime(getMonthAggregationByDayTime(now))
                 .build();
+    }
+
+    private List<CountAggregationResult> getYearDetectionAggregationByMonth(LocalDate now) {
+        List<CatDetection> yearDetections = getYearDetections(now.getYear());
+        return aggregationMapToCountAggregationResults(
+                yearDetections.stream()
+                        .map(CatDetection::getTimestamp)
+                        .map(date -> date.toInstant().atZone(ZoneId.systemDefault()).getMonth().toString())
+                        .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+        );
+    }
+
+    private List<CountAggregationResult> getMonthAggregationByDayTime(LocalDate now) {
+        List<CatDetection> monthDetections = getMonthDetections(now.getYear(), now.getMonth().ordinal(), now.getDayOfMonth());
+        return aggregationMapToCountAggregationResults(
+                monthDetections.stream()
+                        .collect(Collectors.groupingBy(catDetection -> catDetection.getDayTime().toString(), Collectors.counting()))
+        );
+    }
+
+    private List<CountAggregationResult> getAggregationByBreed() {
+        List<CatDetection> detections = catDetectionRepository.findAll();
+        return aggregationMapToCountAggregationResults(
+                detections.stream()
+                        .map(catDetection -> catRepository.getOne(catDetection.getCatId()))
+                        .collect(Collectors.groupingBy(Cat::getBreed, Collectors.counting()))
+        );
+    }
+
+    private List<CountAggregationResult> aggregationMapToCountAggregationResults(Map<String, Long> aggregations) {
+        return aggregations.entrySet()
+                .stream()
+                .map(
+                        entry -> CountAggregationResult.builder()
+                                .name(entry.getKey())
+                                .count(entry.getValue())
+                                .build()
+                )
+                .collect(Collectors.toList());
     }
 
     private DayTime getTopTimeInMonth(LocalDate now) {
@@ -73,7 +118,6 @@ public class StatisticsServiceImpl implements StatisticsService {
         List<CatDetection> yearDetections = getYearDetections(year);
         return getTopCatsInDetections(yearDetections, top);
     }
-
 
     private Cat getCatOfTheDay(LocalDate now) {
         List<CatDetection> detections = getDayDetections(now.getYear(), now.getMonth().ordinal(), now.getDayOfMonth());

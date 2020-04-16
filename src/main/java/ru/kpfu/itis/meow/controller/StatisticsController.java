@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.kpfu.itis.meow.model.totals.TotalStatistics;
+import ru.kpfu.itis.meow.model.statistics.Statistics;
 import ru.kpfu.itis.meow.service.StatisticsService;
 
 @RestController
@@ -21,7 +21,7 @@ public class StatisticsController {
     }
 
     @GetMapping("/totals")
-    public TotalStatistics getTotalStatistics() {
+    public Statistics getTotalStatistics() {
         return statisticsService.getTotals();
     }
 }
